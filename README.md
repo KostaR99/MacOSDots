@@ -2,6 +2,8 @@
 
 Personal macOS dotfiles.
 
+![Desktop screenshot](<screenshots/Screenshot 2026-06-27 at 19.27.50.png>)
+
 ## What's here
 
 | Path | Purpose |
