@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640">
+  <defs>
+    <radialGradient id="nightSky" cx="50%" cy="18%" r="76%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="42%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+    <radialGradient id="knowledgeBurst" cx="50%" cy="45%" r="48%">
+      <stop offset="0%" stop-color="#fff7cc"/>
+      <stop offset="20%" stop-color="#f9b86f"/>
+      <stop offset="48%" stop-color="#38bdf8"/>
+      <stop offset="82%" stop-color="#312e81"/>
+      <stop offset="100%" stop-color="#020617" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="figureWarmth" x1="288" y1="440" x2="672" y2="640" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#7f1d1d"/>
+      <stop offset="44%" stop-color="#c2410c"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <linearGradient id="bookPageLeft" x1="238" y1="412" x2="480" y2="548" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fff7d6"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="bookPageRight" x1="722" y1="412" x2="480" y2="548" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#fed7aa"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+    <filter id="glow" x="-45%" y="-45%" width="190%" height="190%">
+      <feGaussianBlur stdDeviation="11" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="deepShadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="22" stdDeviation="24" flood-color="#000000" flood-opacity="0.62"/>
+    </filter>
+    <path id="arcText" d="M290 322 C386 282 574 282 670 322"/>
+  </defs>
+
+  <rect width="960" height="640" rx="52" fill="url(#nightSky)"/>
+  <rect x="18" y="18" width="924" height="604" rx="42" fill="none" stroke="#334155" stroke-width="3" opacity="0.55"/>
+
+  <g opacity="0.92">
+    <circle cx="82" cy="92" r="1.8" fill="#f8fafc"/>
+    <circle cx="139" cy="176" r="1.5" fill="#fde68a"/>
+    <circle cx="197" cy="70" r="2.4" fill="#f8fafc"/>
+    <circle cx="246" cy="211" r="1.6" fill="#bae6fd"/>
+    <circle cx="312" cy="126" r="2.3" fill="#fef3c7"/>
+    <circle cx="386" cy="82" r="1.4" fill="#e0e7ff"/>
+    <circle cx="438" cy="166" r="2.2" fill="#f8fafc"/>
+    <circle cx="515" cy="84" r="2.7" fill="#ffffff"/>
+    <circle cx="588" cy="154" r="1.7" fill="#bfdbfe"/>
+    <circle cx="652" cy="64" r="2" fill="#fde68a"/>
+    <circle cx="724" cy="134" r="2.6" fill="#f8fafc"/>
+    <circle cx="804" cy="76" r="1.8" fill="#e0f2fe"/>
+    <circle cx="866" cy="188" r="2.2" fill="#fef3c7"/>
+    <circle cx="908" cy="276" r="1.5" fill="#f8fafc"/>
+    <circle cx="116" cy="315" r="1.6" fill="#bfdbfe"/>
+    <circle cx="206" cy="370" r="2.1" fill="#f8fafc"/>
+    <circle cx="760" cy="348" r="1.7" fill="#fde68a"/>
+    <circle cx="842" cy="414" r="1.9" fill="#bae6fd"/>
+  </g>
+
+  <g opacity="0.55" fill="none" stroke-linecap="round">
+    <path d="M67 140 H151 M109 98 V182" stroke="#f8fafc" stroke-width="1.4"/>
+    <path d="M718 238 H802 M760 196 V280" stroke="#fde68a" stroke-width="1.2"/>
+    <path d="M356 250 H418 M387 219 V281" stroke="#bae6fd" stroke-width="1.1"/>
+    <path d="M837 115 H881 M859 93 V137" stroke="#f8fafc" stroke-width="1"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <ellipse cx="480" cy="296" rx="270" ry="185" fill="url(#knowledgeBurst)" opacity="0.95"/>
+    <path d="M476 105 C540 164 617 204 750 231 C617 271 550 337 501 464 C463 337 388 276 250 232 C374 204 426 158 476 105Z" fill="#fef3c7" opacity="0.72"/>
+    <path d="M480 128 C528 203 584 251 684 292 C577 305 519 360 480 474 C441 360 383 305 276 292 C376 251 432 203 480 128Z" fill="#38bdf8" opacity="0.48"/>
+    <path d="M480 177 C513 242 558 287 628 319 C553 328 512 371 480 448 C448 371 407 328 332 319 C402 287 447 242 480 177Z" fill="#ffffff" opacity="0.62"/>
+  </g>
+
+  <g opacity="0.78" fill="none" stroke-linecap="round" filter="url(#glow)">
+    <path d="M285 288 C357 219 419 183 492 109" stroke="#fde68a" stroke-width="4"/>
+    <path d="M668 286 C598 222 545 180 488 109" stroke="#fca5a5" stroke-width="3.4"/>
+    <path d="M344 357 C399 322 441 286 480 210" stroke="#93c5fd" stroke-width="3"/>
+    <path d="M620 360 C560 322 520 286 480 210" stroke="#c4b5fd" stroke-width="3"/>
+  </g>
+
+  <g filter="url(#deepShadow)">
+    <path d="M294 438 C324 380 383 349 446 359 L480 468 L514 359 C579 349 637 381 666 438 L712 640 H248Z" fill="url(#figureWarmth)"/>
+    <path d="M348 385 C383 342 439 323 480 351 C522 323 578 342 612 385 C558 365 512 382 480 420 C448 382 402 365 348 385Z" fill="#020617" opacity="0.9"/>
+    <path d="M301 426 C358 410 421 421 480 466 L480 558 C413 507 330 488 235 502Z" fill="url(#bookPageLeft)"/>
+    <path d="M659 426 C602 410 539 421 480 466 L480 558 C547 507 630 488 725 502Z" fill="url(#bookPageRight)"/>
+    <path d="M480 466 C483 491 483 531 480 558" fill="none" stroke="#7c2d12" stroke-width="7" stroke-linecap="round"/>
+    <path d="M323 449 C378 440 426 450 462 482" fill="none" stroke="#7c2d12" stroke-width="4" opacity="0.38"/>
+    <path d="M637 449 C582 440 534 450 498 482" fill="none" stroke="#7c2d12" stroke-width="4" opacity="0.38"/>
+    <path d="M304 478 C363 471 418 482 458 512" fill="none" stroke="#7c2d12" stroke-width="3" opacity="0.32"/>
+    <path d="M656 478 C597 471 542 482 502 512" fill="none" stroke="#7c2d12" stroke-width="3" opacity="0.32"/>
+  </g>
+
+  <g opacity="0.95">
+    <circle cx="602" cy="176" r="20" fill="#f97316"/>
+    <circle cx="595" cy="169" r="5" fill="#fed7aa"/>
+    <ellipse cx="602" cy="176" rx="39" ry="8" fill="none" stroke="#fde68a" stroke-width="4" transform="rotate(-24 602 176)"/>
+    <path d="M164 214 C235 195 304 206 364 250" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+    <path d="M606 252 C686 227 761 239 823 294" fill="none" stroke="#a78bfa" stroke-width="4" stroke-linecap="round" opacity="0.65"/>
+  </g>
+
+  <text x="480" y="113" text-anchor="middle" font-family="Georgia, Times New Roman, serif" font-size="58" fill="#fff7ed" letter-spacing="-2">
+    Always more
+  </text>
+  <text x="480" y="160" text-anchor="middle" font-family="Avenir Next, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#fed7aa" letter-spacing="5">
+    TO LEARN
+  </text>
+  <text font-family="Georgia, Times New Roman, serif" font-size="22" fill="#e0f2fe" opacity="0.82" letter-spacing="0.2">
+    <textPath href="#arcText" startOffset="50%" text-anchor="middle">open the book, open the sky</textPath>
+  </text>
+
+  <path d="M220 569 C354 608 606 608 740 569" fill="none" stroke="#0f172a" stroke-width="14" stroke-linecap="round" opacity="0.75"/>
+</svg>

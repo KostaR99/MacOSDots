@@ -1,0 +1,30 @@
+# QSTA cosmic banner theme
+# Palette pulled from the current banner: space navy, electric cyan,
+# starlight gold, and red-orange accents.
+
+background = #020617
+background-opacity = 1
+foreground = #dbeafe
+
+cursor-color = #e7be67
+cursor-text = #020617
+
+selection-background = #103c5f
+selection-foreground = #fff7d6
+
+palette = 0=#020617
+palette = 1=#da412b
+palette = 2=#5f7f56
+palette = 3=#e7be67
+palette = 4=#105691
+palette = 5=#6d5aa8
+palette = 6=#2d91c4
+palette = 7=#dbeafe
+palette = 8=#0f172a
+palette = 9=#ff6a4b
+palette = 10=#9fbd7a
+palette = 11=#f5d37c
+palette = 12=#41a6d9
+palette = 13=#a78bfa
+palette = 14=#8fd7e8
+palette = 15=#fff7d6
