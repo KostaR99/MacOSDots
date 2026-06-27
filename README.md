@@ -17,8 +17,8 @@ This setup uses two physical monitors, so virtual workspaces are intentionally d
 
 | Workspace | Monitor |
 | --- | --- |
-| `1` | `DELL U2724D` |
-| `2` | `DELL S2722DC` |
+| `1` | Horizontal monitor |
+| `2` | Vertical monitor |
 
 ### Keybindings
 
