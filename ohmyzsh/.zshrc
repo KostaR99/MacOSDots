@@ -1,5 +1,4 @@
-# Ghostty-only startup banner. Keep this before Powerlevel10k instant prompt.
-[[ -f "$HOME/.config/ghostty/startup-banner.zsh" ]] && source "$HOME/.config/ghostty/startup-banner.zsh"
+command -v neofetch >/dev/null 2>&1 && neofetch --backend ascii --ascii_distro macos
 
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]

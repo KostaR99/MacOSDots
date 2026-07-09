@@ -2,9 +2,9 @@
 # Palette pulled from the current banner: space navy, electric cyan,
 # starlight gold, and red-orange accents.
 
-background = #020617
 background-opacity = 1
-foreground = #dbeafe
+background-blur = false
+macos-titlebar-style = hidden
 
 cursor-color = #e7be67
 cursor-text = #020617
