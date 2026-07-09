@@ -1,46 +1,35 @@
 # MacOSDots
 
-Personal macOS dotfiles.
+Personal macOS desktop configuration.
 
 ![Desktop screenshot](<screenshots/Screenshot 2026-06-27 at 19.27.50.png>)
 
-## What's here
-
 | Path | Purpose |
 | --- | --- |
-| `aerospace/` | AeroSpace tiling window manager config and helper scripts. |
-| `sketchybar/` | SketchyBar Lua config, items, helpers, and colors. |
-| `ghostty/` | Ghostty terminal config, startup banner, and mascot assets. |
-| `ohmyzsh/` | Shell config: `.zshrc`, `.p10k.zsh`, and Oh My Zsh `custom/`. |
+| `aerospace/` | Two-monitor tiling config, jankyBorders, helpers, and the custom animation build. |
+| `sketchybar/` | Bottom SketchyBar with AeroSpace workspaces, media, weather, Wi-Fi, volume, clock, and CPU temperature. |
+| `ghostty/` | Ghostty terminal configuration and assets. |
+| `ohmyzsh/` | Zsh, Powerlevel10k, and Oh My Zsh configuration. |
 
-## AeroSpace
+## Desktop setup
 
-This setup uses two physical monitors, so virtual workspaces are intentionally disabled/avoided. There are only two workspaces, mapped one-to-one to the monitors:
+```sh
+brew tap FelixKratz/formulae
+brew install borders sketchybar lua macmon nowplaying-cli
+brew install --cask sf-symbols font-sf-mono font-sf-pro
 
-| Workspace | Monitor |
-| --- | --- |
-| `1` | Horizontal monitor |
-| `2` | Vertical monitor |
+git clone https://github.com/FelixKratz/SbarLua.git /tmp/SbarLua
+make -C /tmp/SbarLua install
+```
 
-### Keybindings
+Move any existing configs out of the way, then link this checkout:
 
-| Key | Action |
-| --- | --- |
-| `alt-c` | Open Cursor |
-| `alt-s` | Open Safari |
-| `alt-enter` | Open Ghostty |
-| `alt-l` | Lock the Mac |
-| `alt-left/down/up/right` | Focus window left/down/up/right |
-| `ctrl-shift-h/j/k/l` | Move window left/down/up/right |
-| `alt-shift-minus/equal` | Resize smaller/larger |
-| `alt-1`, `alt-2` | Switch to workspace 1/2 |
-| `alt-shift-1`, `alt-shift-2` | Move window to workspace 1/2 |
-| `alt-shift-f` | Toggle fullscreen |
-| `alt-tab` | Switch to previous workspace |
-| `alt-shift-tab` | Move workspace to next monitor |
-| `alt-g` | Apply golden layout |
-| `alt-q` | Close focused window |
-| `cmd-w` | Close previous window helper |
-| `alt-shift-semicolon` | Enter service mode |
+```sh
+mkdir -p "$HOME/.config"
+ln -s "$PWD/aerospace" "$HOME/.config/aerospace"
+ln -s "$PWD/sketchybar" "$HOME/.config/sketchybar"
+./aerospace/install-animated.sh
+brew services restart sketchybar
+```
 
-Service mode: `esc` reloads config, `r` flattens the workspace tree, `backspace` closes all other windows, and `alt-shift-h/j/k/l` joins containers.
+The AeroSpace config is tied to `DELL U2724D` and `DELL S2722DC`, uses workspaces `1` and `2`, and launches an active-only clay jankyBorder. See [`aerospace/README.md`](aerospace/README.md) for the custom build details.

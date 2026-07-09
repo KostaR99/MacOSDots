@@ -1,0 +1,329 @@
+diff --git a/Sources/AppBundle/command/impl/ConfigCommand.swift b/Sources/AppBundle/command/impl/ConfigCommand.swift
+index f518804..5fd5f54 100644
+--- a/Sources/AppBundle/command/impl/ConfigCommand.swift
++++ b/Sources/AppBundle/command/impl/ConfigCommand.swift
+@@ -145,7 +145,15 @@ extension [Command] {
+         }
+         return .map(["binding": .map(keyNotationToScript)])
+     }
+-    return .map(["mode": .map(mode)])
++    return .map([
++        "animation": .map([
++            "enabled": .scalar(.string(String(config.animation.enabled))),
++            "duration-ms": .scalar(.int(config.animation.durationMs)),
++            "fps": .scalar(.int(config.animation.fps)),
++            "easing": .scalar(.string(config.animation.easing.rawValue)),
++        ]),
++        "mode": .map(mode),
++    ])
+ }
+ 
+ enum ConfigScalarValue: Encodable {
+diff --git a/Sources/AppBundle/config/parseAnimation.swift b/Sources/AppBundle/config/parseAnimation.swift
+index 822ac84..cff9dd3 100644
+--- a/Sources/AppBundle/config/parseAnimation.swift
++++ b/Sources/AppBundle/config/parseAnimation.swift
+@@ -12,7 +12,7 @@ struct AnimationConfig: ConvenienceCopyable, Equatable, Sendable {
+     var easing: AnimationEasing
+ 
+     static let `default` = AnimationConfig(
+-        enabled: true,
++        enabled: false,
+         durationMs: 150,
+         fps: 120,
+         easing: .easeOutCubic,
+diff --git a/Sources/AppBundle/mouse/moveWithMouse.swift b/Sources/AppBundle/mouse/moveWithMouse.swift
+index d9d497c..ec85632 100644
+--- a/Sources/AppBundle/mouse/moveWithMouse.swift
++++ b/Sources/AppBundle/mouse/moveWithMouse.swift
+@@ -9,6 +9,7 @@ func movedObs(_: AXObserver, ax: AXUIElement, notif: CFString, _: UnsafeMutableR
+     let notif = notif as String
+     Task { @MainActor in
+         guard let token: RunSessionGuard = .isServerEnabled else { return }
++        if let windowId, isWindowAnimationActive(windowId), !isLeftMouseButtonDown { return }
+         guard let windowId, let window = Window.get(byId: windowId), try await isManipulatedWithMouse(window) else {
+             scheduleCancellableCompleteRefreshSession(.ax(notif))
+             return
+diff --git a/Sources/AppBundle/mouse/resizeWithMouse.swift b/Sources/AppBundle/mouse/resizeWithMouse.swift
+index 4e47ce5..345bbd0 100644
+--- a/Sources/AppBundle/mouse/resizeWithMouse.swift
++++ b/Sources/AppBundle/mouse/resizeWithMouse.swift
+@@ -9,6 +9,7 @@ func resizedObs(_: AXObserver, ax: AXUIElement, notif: CFString, _: UnsafeMutabl
+     let windowId = ax.containingWindowId()
+     Task { @MainActor in
+         guard let token: RunSessionGuard = .isServerEnabled else { return }
++        if let windowId, isWindowAnimationActive(windowId), !isLeftMouseButtonDown { return }
+         guard let windowId, let window = Window.get(byId: windowId), try await isManipulatedWithMouse(window) else {
+             scheduleCancellableCompleteRefreshSession(.ax(notif))
+             return
+diff --git a/Sources/AppBundle/tree/MacApp.swift b/Sources/AppBundle/tree/MacApp.swift
+index 6df0662..537ac67 100644
+--- a/Sources/AppBundle/tree/MacApp.swift
++++ b/Sources/AppBundle/tree/MacApp.swift
+@@ -1,6 +1,35 @@
+ import AppKit
+ import Common
+ 
++@MainActor private var windowAnimationGenerations: [UInt32: UInt] = [:]
++
++private struct WindowAnimationFrame: Sendable {
++    let topLeft: CGPoint
++    let size: CGSize
++}
++
++@MainActor
++func isWindowAnimationActive(_ windowId: UInt32) -> Bool {
++    windowAnimationGenerations[windowId] != nil
++}
++
++@MainActor
++private func beginWindowAnimation(_ windowId: UInt32) -> UInt {
++    let generation = (windowAnimationGenerations[windowId] ?? 0) &+ 1
++    windowAnimationGenerations[windowId] = generation
++    return generation
++}
++
++@MainActor
++private func finishWindowAnimation(_ windowId: UInt32, generation: UInt) {
++    Task {
++        try? await Task.sleep(for: .milliseconds(100))
++        if windowAnimationGenerations[windowId] == generation {
++            windowAnimationGenerations[windowId] = nil
++        }
++    }
++}
++
+ // Potential alternative implementation
+ // https://github.com/swiftlang/swift-evolution/blob/main/proposals/0392-custom-actor-executors.md
+ // (only available since macOS 14)
+@@ -131,12 +160,116 @@ final class MacApp: AbstractApp {
+         }
+     }
+ 
++    @MainActor
+     func setAxFrame(_ windowId: UInt32, _ topLeft: CGPoint?, _ size: CGSize?, animated: AnimationConfig? = nil) {
+         setFrameJobs.removeValue(forKey: windowId)?.cancel()
+-        setFrameJobs[windowId] = withWindowAsync(windowId) { [axApp] window, job in
+-            try disableAnimations(app: axApp.threadGuarded, job) {
+-                try setFrame(window, topLeft, size, animated, job)
++        guard let animation = animated,
++              animation.enabled,
++              animation.durationSec > 0,
++              let topLeft,
++              let size,
++              let thread
++        else {
++            setFrameJobs[windowId] = withWindowAsync(windowId) { [axApp] window, job in
++                try disableAnimations(app: axApp.threadGuarded, job) {
++                    try setFrame(window, topLeft, size, job)
++                }
+             }
++            return
++        }
++
++        let job = RunLoopJob()
++        setFrameJobs[windowId] = job
++        let generation = beginWindowAnimation(windowId)
++        Task {
++            await runWindowAnimation(
++                windowId,
++                from: thread,
++                to: WindowAnimationFrame(topLeft: topLeft, size: size),
++                animation: animation,
++                job: job,
++                generation: generation,
++            )
++        }
++    }
++
++    @MainActor
++    private func runWindowAnimation(
++        _ windowId: UInt32,
++        from thread: Thread,
++        to target: WindowAnimationFrame,
++        animation: AnimationConfig,
++        job: RunLoopJob,
++        generation: UInt,
++    ) async {
++        defer { finishWindowAnimation(windowId, generation: generation) }
++        let windows = windows
++        let axApp = axApp
++
++        do {
++            try job.checkCancellation()
++            guard let start: WindowAnimationFrame = try await thread.runInLoop({ [windows] frameJob in
++                try job.checkCancellation()
++                try frameJob.checkCancellation()
++                guard let window = windows.threadGuarded[windowId]?.ax,
++                      let topLeft = window.get(Ax.topLeftCornerAttr),
++                      let size = window.get(Ax.sizeAttr)
++                else {
++                    return nil
++                }
++                return WindowAnimationFrame(topLeft: topLeft, size: size)
++            }) else {
++                return
++            }
++            if abs(start.topLeft.x - target.topLeft.x) <= 0.5,
++               abs(start.topLeft.y - target.topLeft.y) <= 0.5,
++               abs(start.size.width - target.size.width) <= 0.5,
++               abs(start.size.height - target.size.height) <= 0.5
++            {
++                return
++            }
++
++            let durationSec = animation.durationSec
++            let frameInterval = animation.frameIntervalSec
++            let startTime = CFAbsoluteTimeGetCurrent()
++            var nextDeadline = startTime + frameInterval
++
++            while true {
++                try job.checkCancellation()
++                let sleep = nextDeadline - CFAbsoluteTimeGetCurrent()
++                if sleep > 0 {
++                    try await Task.sleep(for: Duration.seconds(sleep))
++                }
++                try job.checkCancellation()
++
++                let t = min(1.0, (CFAbsoluteTimeGetCurrent() - startTime) / durationSec)
++                let eased = animation.easing.apply(t)
++                let frame = WindowAnimationFrame(
++                    topLeft: CGPoint(
++                        x: start.topLeft.x + (target.topLeft.x - start.topLeft.x) * eased,
++                        y: start.topLeft.y + (target.topLeft.y - start.topLeft.y) * eased,
++                    ),
++                    size: CGSize(
++                        width: start.size.width + (target.size.width - start.size.width) * eased,
++                        height: start.size.height + (target.size.height - start.size.height) * eased,
++                    ),
++                )
++
++                try await thread.runInLoop { [windows, axApp] frameJob in
++                    try job.checkCancellation()
++                    guard let window = windows.threadGuarded[windowId]?.ax else { return }
++                    try disableAnimations(app: axApp.threadGuarded, frameJob) {
++                        try setFrame(window, frame.topLeft, frame.size, job)
++                    }
++                }
++
++                if t >= 1.0 { return }
++                nextDeadline += frameInterval
++            }
++        } catch is CancellationError {
++            return
++        } catch {
++            print("AeroSpace animation error: \(error)")
+         }
+     }
+ 
+@@ -146,7 +279,7 @@ final class MacApp: AbstractApp {
+             try disableAnimations(app: axApp.threadGuarded, job) {
+                 // Don't animate the blocking variant. It's used during shutdown / rare paths
+                 // where we want the change to apply synchronously.
+-                try setFrame(window, topLeft, size, nil, job)
++                try setFrame(window, topLeft, size, job)
+             }
+         }
+     }
+@@ -373,27 +506,9 @@ extension [UInt32: AxWindow] {
+     }
+ }
+ 
+-private func setFrame(_ window: AXUIElement, _ topLeft: CGPoint?, _ size: CGSize?, _ animation: AnimationConfig?, _ job: RunLoopJob) throws {
++private func setFrame(_ window: AXUIElement, _ topLeft: CGPoint?, _ size: CGSize?, _ job: RunLoopJob) throws {
+     // Set size and then the position. The order is important https://github.com/nikitabobko/AeroSpace/issues/143
+     //                                                        https://github.com/nikitabobko/AeroSpace/issues/335
+-    if let animation, animation.enabled, animation.durationSec > 0,
+-       let topLeft, let size,
+-       let startSize = window.get(Ax.sizeAttr),
+-       let startTopLeft = window.get(Ax.topLeftCornerAttr),
+-       (abs(startSize.width - size.width) > 0.5 ||
+-           abs(startSize.height - size.height) > 0.5 ||
+-           abs(startTopLeft.x - topLeft.x) > 0.5 ||
+-           abs(startTopLeft.y - topLeft.y) > 0.5)
+-    {
+-        try animateFrame(
+-            window: window,
+-            startTopLeft: startTopLeft, startSize: startSize,
+-            endTopLeft: topLeft, endSize: size,
+-            animation: animation,
+-            job,
+-        )
+-        return
+-    }
+     if let size { window.set(Ax.sizeAttr, size) }
+     try job.checkCancellation()
+     if let topLeft { window.set(Ax.topLeftCornerAttr, topLeft) } else { return }
+@@ -401,54 +516,6 @@ private func setFrame(_ window: AXUIElement, _ topLeft: CGPoint?, _ size: CGSize
+     if let size { window.set(Ax.sizeAttr, size) }
+ }
+ 
+-private func animateFrame(
+-    window: AXUIElement,
+-    startTopLeft: CGPoint, startSize: CGSize,
+-    endTopLeft: CGPoint, endSize: CGSize,
+-    animation: AnimationConfig,
+-    _ job: RunLoopJob,
+-) throws {
+-    let durationSec = animation.durationSec
+-    let frameInterval = animation.frameIntervalSec
+-    let easing = animation.easing
+-    let startTime = CFAbsoluteTimeGetCurrent()
+-    var nextDeadline = startTime + frameInterval
+-
+-    while true {
+-        try job.checkCancellation()
+-        let now = CFAbsoluteTimeGetCurrent()
+-        let elapsed = now - startTime
+-        let rawT = durationSec <= 0 ? 1.0 : elapsed / durationSec
+-        let t = rawT >= 1.0 ? 1.0 : rawT
+-        let eased = easing.apply(t)
+-
+-        let interpSize = CGSize(
+-            width: startSize.width + (endSize.width - startSize.width) * eased,
+-            height: startSize.height + (endSize.height - startSize.height) * eased,
+-        )
+-        let interpTopLeft = CGPoint(
+-            x: startTopLeft.x + (endTopLeft.x - startTopLeft.x) * eased,
+-            y: startTopLeft.y + (endTopLeft.y - startTopLeft.y) * eased,
+-        )
+-
+-        // Same order as the static setFrame: size, position, size.
+-        // The double-size set fixes the issue where, on the final frame,
+-        // certain apps (Terminal.app, etc.) snap to a stale size after a position change.
+-        window.set(Ax.sizeAttr, interpSize)
+-        try job.checkCancellation()
+-        window.set(Ax.topLeftCornerAttr, interpTopLeft)
+-        try job.checkCancellation()
+-        window.set(Ax.sizeAttr, interpSize)
+-
+-        if t >= 1.0 { return }
+-
+-        // Pace ourselves to the configured fps; if we're already behind, skip the sleep.
+-        let sleep = nextDeadline - CFAbsoluteTimeGetCurrent()
+-        if sleep > 0 { Thread.sleep(forTimeInterval: sleep) }
+-        nextDeadline += frameInterval
+-    }
+-}
+-
+ // Some undocumented magic
+ // References: https://github.com/koekeishiya/yabai/commit/3fe4c77b001e1a4f613c26f01ea68c0f09327f3a
+ //             https://github.com/rxhanson/Rectangle/pull/285
+diff --git a/Sources/Common/gitHashGenerated.swift b/Sources/Common/gitHashGenerated.swift
+index 81740b1..8b49d79 100644
+--- a/Sources/Common/gitHashGenerated.swift
++++ b/Sources/Common/gitHashGenerated.swift
+@@ -1,3 +1,3 @@
+ // FILE IS GENERATED BY generate.sh
+-public let gitHash = "SNAPSHOT"
+-public let gitShortHash = "SNAPSHOT"
++public let gitHash = "895ad57e57f152c0dc2787f295d786a16c38014f-local-animation-fix"
++public let gitShortHash = "895ad57-local"
+diff --git a/Sources/Common/versionGenerated.swift b/Sources/Common/versionGenerated.swift
+index fa5c825..3faaeb0 100644
+--- a/Sources/Common/versionGenerated.swift
++++ b/Sources/Common/versionGenerated.swift
+@@ -1,2 +1,2 @@
+ // FILE IS GENERATED BY generate.sh
+-public let aeroSpaceAppVersion = "0.0.0-SNAPSHOT"
++public let aeroSpaceAppVersion = "0.20.3-Animated.1"

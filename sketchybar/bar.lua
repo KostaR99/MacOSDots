@@ -1,17 +1,18 @@
-local colors = require("colors").sections.bar
+local colors = require("colors")
+local settings = require("settings")
+local sbar = require("sketchybar")
 
--- Equivalent to the --bar domain
-sbar.bar {
-  position = "bottom",
-  topmost = "window",
-  height = 40,
-  color = colors.bg,
-  y_offset = 0,
-  padding_right = 6,
-  padding_left = 6,
-  border_color = colors.border,
-  border_width = 1,
-  blur_radius = 12,
-  margin = 12,
-  corner_radius = 12,
-}
+-- Load the bar with widgets in the correct position first
+sbar.bar({
+    y_offset = 0,
+    position = "bottom",
+    topmost = "window",
+    height = 40,
+    padding_right = 6,
+    padding_left = 6,
+    color = colors.transparent,
+    margin = 12,
+    corner_radius = 12,
+    shadow = false,
+    blur_radius = 0,
+})

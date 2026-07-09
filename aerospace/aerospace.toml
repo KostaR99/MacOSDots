@@ -19,6 +19,7 @@ after-login-command = []
 # so it won't be run twice on AeroSpace restart
 after-startup-command = [
     'exec-and-forget sketchybar',
+    'exec-and-forget /opt/homebrew/bin/borders style=uniform active_color=0xffc8755a inactive_color=0x00000000 width=8.0 hidpi=on ax_focus=off',
     'exec-and-forget /Users/kostarakonjac/.config/aerospace/enforce-layouts.sh all'
     ]
 
@@ -29,11 +30,11 @@ exec-on-workspace-change = ['/bin/bash', '-c',
 
 
 # Start AeroSpace at login
-start-at-login = true
+start-at-login = false
 
 # Normalizations. See: https://nikitabobko.github.io/AeroSpace/guide#normalization
-enable-normalization-flatten-containers = true
-enable-normalization-opposite-orientation-for-nested-containers = true
+enable-normalization-flatten-containers = false
+enable-normalization-opposite-orientation-for-nested-containers = false
 
 # See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 # The 'accordion-padding' specifies the size of accordion padding
@@ -64,6 +65,12 @@ on-focus-changed = 'move-mouse window-lazy-center'
 # Also see: https://nikitabobko.github.io/AeroSpace/goodies#disable-hide-app
 automatically-unhide-macos-hidden-apps = true
 
+[animation]
+enabled = true
+duration-ms = 140
+fps = 120
+easing = 'ease-out-cubic'
+
 # Gaps between windows (inner-*) and between monitor edges (outer-*).
 # Possible values:
 # - Constant:     gaps.outer.top = 8
@@ -72,10 +79,10 @@ automatically-unhide-macos-hidden-apps = true
 #                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
 #                 See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
 [gaps]
-inner.horizontal = 8
-inner.vertical =   8
+inner.horizontal = 12
+inner.vertical =   12
 outer.left =       10
-outer.bottom =     50
+outer.bottom =     45
 
 # For Sketchybar
 # outer.top = [
@@ -119,7 +126,13 @@ alt-left = 'focus left'
 alt-down = 'focus down'
 alt-up = 'focus up'
 alt-right = 'focus right'
-alt-g = 'exec-and-forget /Users/kostarakonjac/.config/aerospace/golden-layout.sh'
+
+# Swap the focused window with its neighbor. See: https://nikitabobko.github.io/AeroSpace/commands#swap
+alt-shift-left = 'swap left'
+alt-shift-down = 'swap down'
+alt-shift-up = 'swap up'
+alt-shift-right = 'swap right'
+alt-v = 'split opposite'
 alt-q = 'close'
 cmd-w = 'exec-and-forget /Users/kostarakonjac/.config/aerospace/close-previous-window.sh'
 
