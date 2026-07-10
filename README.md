@@ -16,7 +16,7 @@ Personal macOS desktop configuration.
 ```sh
 brew tap FelixKratz/formulae
 brew install borders sketchybar lua macmon nowplaying-cli
-brew install --cask sf-symbols font-sf-mono font-sf-pro
+brew install --cask sf-symbols font-sf-mono font-sf-pro swift-quit
 
 git clone https://github.com/FelixKratz/SbarLua.git /tmp/SbarLua
 make -C /tmp/SbarLua install
@@ -32,4 +32,4 @@ ln -s "$PWD/sketchybar" "$HOME/.config/sketchybar"
 brew services restart sketchybar
 ```
 
-The AeroSpace config is tied to `DELL U2724D` and `DELL S2722DC`, uses workspaces `1` and `2`, and launches an active-only clay jankyBorder. See [`aerospace/README.md`](aerospace/README.md) for the custom build details.
+The AeroSpace config is tied to `DELL U2724D` and `DELL S2722DC`, uses workspaces `1` and `2`, and launches an active-only clay jankyBorder. SwiftQuit quits apps automatically when their last window closes. See [`aerospace/README.md`](aerospace/README.md) for the custom build details.

@@ -134,6 +134,7 @@ alt-shift-up = 'swap up'
 alt-shift-right = 'swap right'
 alt-v = 'split opposite'
 alt-q = 'close'
+ctrl-w = "exec-and-forget osascript -e 'tell application \"System Events\" to keystroke \"q\" using command down'"
 cmd-q = 'close --quit-if-last-window'
 cmd-w = 'exec-and-forget /Users/kostarakonjac/.config/aerospace/close-previous-window.sh'
 
